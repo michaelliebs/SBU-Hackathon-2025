@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface Event {
@@ -25,7 +25,7 @@ interface UserProfile {
 
 const Profile = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  const { user: currentUser } = useAuth();
+  const { logout: contextLogout, user: currentUser } = useAuth();
   const { id } = useParams(); // For `/profile/:id` route
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,8 @@ const Profile = () => {
   });
 
   const isOwnProfile = currentUser?._id === id;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -58,7 +60,7 @@ const Profile = () => {
     };
 
     fetchUser();
-  }, [id]);
+  }, [API_URL, id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -73,6 +75,24 @@ const Profile = () => {
       console.error("Failed to update profile:", err);
     }
   };
+
+  const handleDelete = async () => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete your profile? This action cannot be undone."
+  );
+  if (!confirmed) return;
+
+  try {
+    await axios.delete(`${API_URL}/users/me`, { withCredentials: true });
+    // Clear user in context and redirect
+    await contextLogout(); 
+    // After deletion, redirect to login page
+    navigate("/login");
+  } catch (err) {
+    console.error("Failed to delete profile:", err);
+  }
+};
+
 
   if (loading) return <p>Loading...</p>;
   if (!user) return <p>User not found</p>;
@@ -144,6 +164,17 @@ const Profile = () => {
           </ul>
         )}
       </div>
+      {isOwnProfile && (
+        <div style={{ marginTop: "1rem" }}>
+            <button
+            onClick={handleDelete}
+            style={{ backgroundColor: "red", color: "white", padding: "8px 12px", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+            Delete Profile
+            </button>
+        </div>
+      )}
+
     </div>
   );
 };
