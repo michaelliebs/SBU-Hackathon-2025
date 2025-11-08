@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'; 
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; 
 import Header from './components/Header';
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -14,6 +14,8 @@ function App() {
         <Header />
 
         <Routes>
+          {/* Redirect root "/" to "/home" */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
