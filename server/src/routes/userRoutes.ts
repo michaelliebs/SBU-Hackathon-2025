@@ -7,7 +7,7 @@ const router = Router();
 
 router.get("/", getUsers);
 
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/signup', async (req: Request, res: Response) => {
   console.log("POST /api/users/register hit", req.body);
   const { name, email, password, bio, major, status } = req.body;
   if (!name || !email || !password) {
@@ -39,6 +39,46 @@ router.post('/register', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('Error during login:', err);
     return res.status(500).json({ error: 'Failed to log in' });
+  }
+});
+
+router.post("/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ error: "Email and password are required." });
+  }
+
+  try {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // find user by email (case-insensitive)
+    const user = await User.findOne({
+      email: normalizedEmail,
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error("Error during login:", err);
+    return res.status(500).json({ error: "Failed to log in" });
   }
 });
 
