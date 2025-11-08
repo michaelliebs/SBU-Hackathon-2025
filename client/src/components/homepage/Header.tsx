@@ -2,6 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { FaUserCircle } from "react-icons/fa";
 import '../../stylesheets/Header.css';
 
 export default function Header() {
@@ -40,11 +41,18 @@ export default function Header() {
           </button>
         </Link>
 
-        <div className="profile-menu">
-          {/* Profile icon (blank circle for now) */}
+       <div className="profile-menu">
+          {/* Profile icon */}
           <div className="profile-icon" onClick={toggleDropdown}>
-            {/* Could replace with an <img> later */}
-            <div className="circle" />
+            {user.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt={`${user.name}'s avatar`}
+                className="avatar-image"
+              />
+            ) : (
+              <FaUserCircle className="avatar-icon" />
+            )}
           </div>
 
           {dropdownOpen && (

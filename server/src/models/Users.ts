@@ -11,6 +11,7 @@ export interface IUser extends Document {
   comments: mongoose.Types.ObjectId[]; // references to comments made by the user
   eventsHosted: mongoose.Types.ObjectId[]; // references to events hosted by the user
   eventsAttending: mongoose.Types.ObjectId[]; // references to events the user is attending
+  profilePicture: string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -25,6 +26,7 @@ const userSchema = new Schema<IUser>(
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     eventsHosted: [{ type: Schema.Types.ObjectId, ref: "Event" }],
     eventsAttending: [{ type: Schema.Types.ObjectId, ref: "Event" }],
+    profilePicture: { type: String, default: "" },
   },
   { timestamps: true }
 );
