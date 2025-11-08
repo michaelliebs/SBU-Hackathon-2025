@@ -48,4 +48,20 @@ router.post('/create', requireAuth, async (req: AuthRequest, res: Response) => {
   }
 });
 
+router.put('/edit/:id', requireAuth, async (req:AuthRequest, res: Response) => {
+  try {
+  const { id } = req.params;
+  const updatedEvent = await Event.findByIdAndUpdate(id, req.body, { new: true });
+
+  if (!updatedEvent) {
+    return res.status(404).json({ error: "Event not fount" });
+  }
+
+  res.status(200).json({ message: "Event successfully updated", event: updatedEvent });
+  } catch (err) {
+    console.error("Error updating event:", err);
+    res.status(500).json({ error: "Failed to update event" });
+  }
+});
+
 export default router;
