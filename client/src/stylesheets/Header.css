@@ -1,0 +1,9 @@
+#site-header {
+    display: flex;
+    background-color: var(--primary);
+    padding: 20px 0;
+}
+
+#site-header > div {
+    padding: 0 0 0 20px;
+}
