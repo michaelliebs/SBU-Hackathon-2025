@@ -32,7 +32,14 @@ export default function Header() {
         <input placeholder="Search Events" />
       </search>
 
-      {user && (
+      {user && (<>
+        <Link to="/create-event" style={{textDecoration: "none"}}>
+          <button className='create-event-btn'>
+            <span style={{fontSize: "22px", marginRight: "10px"}}>+</span>
+            Create event
+          </button>
+        </Link>
+
         <div className="profile-menu">
           {/* Profile icon (blank circle for now) */}
           <div className="profile-icon" onClick={toggleDropdown}>
@@ -49,7 +56,7 @@ export default function Header() {
             </div>
           )}
         </div>
-      )}
+      </>)}
     </header>
   );
 }

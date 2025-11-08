@@ -1,13 +1,14 @@
 #site-header {
   box-sizing: border-box;
   display: flex;
-	background: linear-gradient(141deg, cyan 0%, rebeccapurple 40%, deeppink 90%);
-  padding: 20px 0;
+  background: linear-gradient(141deg, cyan 0%, rebeccapurple 40%, deeppink 90%);
+  padding: 20px 20px;
   /* justify-content: center; */
   position: fixed;
   height: var(--header-height);
   width: 100%;
   z-index: 1000;
+  align-items: flex-end;
 }
 
 #site-header>.links {
@@ -61,4 +62,21 @@
   background-color: #f0f0f0;
 }
 
+.create-event-btn {
+  border-radius: 20px;
+  height: 30px;
+  padding: 4px 20px;
+  background-color: var(--secondary);
+  line-height: 20px;
+  align-items: center;
+  display: flex;
+  border: none;
+}
 
+.create-event-btn:hover {
+  background-color: color-mix(in oklab, var(--secondary) 90%, black);
+}
+
+.create-event-btn:active {
+  background-color: color-mix(in oklab, var(--secondary) 90%, white);
+}
