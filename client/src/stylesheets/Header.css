@@ -1,14 +1,21 @@
 #site-header {
   box-sizing: border-box;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: linear-gradient(141deg, cyan 0%, rebeccapurple 40%, deeppink 90%);
-  padding: 20px 20px;
-  /* justify-content: center; */
+  padding: 10px 20px;
   position: fixed;
-  height: var(--header-height);
+  top: 0;
+  height: var(--header-height, 70px);
   width: 100%;
   z-index: 1000;
-  align-items: flex-end;
+}
+
+.header-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 #site-header>.links {
@@ -19,22 +26,50 @@
   flex: 1
 }
 
+#site-header search input {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  width: 240px;
+  outline: none;
+}
+
 #site-header>div {
   padding: 0 0 0 20px;
 }
 
 .profile-menu {
   position: relative;
-  display: inline-block;
-  margin-left: 1rem;
+  display: flex;
+  align-items: center;
 }
 
-.profile-icon .circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #ccc; /* blank placeholder */
+.profile-icon {
+  width: 40px;
+  height: 40px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+}
+
+.avatar-icon {
+  font-size: 42px;
+  color: white;
+  transition: opacity 0.2s;
+}
+
+.avatar-icon:hover,
+.avatar-image:hover {
+  opacity: 0.8;
 }
 
 .dropdown {
