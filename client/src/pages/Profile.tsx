@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "../stylesheets/Profile.css";
 
 interface Event {
   _id: string;
@@ -117,8 +118,9 @@ const Profile = () => {
             <label>
               Status: <input name="status" value={form.status} onChange={handleChange} />
             </label>
-            <button onClick={handleSave}>Save</button>
-            <button onClick={() => setEditMode(false)}>Cancel</button>
+            <button className="save-btn" onClick={handleSave}>Save</button>
+            <button className="delete-btn" onClick={handleDelete}>Delete Profile</button>
+
           </>
         ) : (
           <>
@@ -141,7 +143,9 @@ const Profile = () => {
             {user.eventsHosted.map((event) => (
               <li key={event._id}>
                 <span>{event.title}</span> - <span>{event.date} {event.time}</span> -{" "}
-                <span style={{ color: getStatusColor(event.status) }}>{event.status}</span>
+                <span className="status-dot" style={{backgroundColor: getStatusColor(event.status)}}></span>
+                <span>{event.status}</span>
+
               </li>
             ))}
           </ul>
@@ -158,23 +162,13 @@ const Profile = () => {
             {user.eventsAttending.map((event) => (
               <li key={event._id}>
                 <span>{event.title}</span> - <span>{event.date} {event.time}</span> -{" "}
-                <span style={{ color: getStatusColor(event.status) }}>{event.status}</span>
+                <span className="status-dot" style={{backgroundColor: getStatusColor(event.status)}}></span>
+                <span>{event.status}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
-      {isOwnProfile && (
-        <div style={{ marginTop: "1rem" }}>
-            <button
-            onClick={handleDelete}
-            style={{ backgroundColor: "red", color: "white", padding: "8px 12px", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-            Delete Profile
-            </button>
-        </div>
-      )}
-
     </div>
   );
 };
