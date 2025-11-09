@@ -65,30 +65,29 @@ const HomePage = () => {
       <main id="home-page">
         <Filter />
 
-        <section className="container">
+      <section className="container">
           {filteredEvents.length === 0 ? (
             <p>No events match your search.</p>
           ) : (
             filteredEvents.map((e) => {
-              const props: EventItemProps = {
-                title: e.title,
-                description: e.description,
-                date: `${e.date}`.split('T')[0],
-                time: e.time,
-                location: e.location,
-                posted_by: e.name,
-                num_attending: e.attendees.length,
-                num_interested: e.interested.length,
-                num_comments: e.comments.length,
-                tags: e.tags,
-                posted_by_id: e.host._id
-              }
-              return <EventItem {...props} />
-            })
-          )}
-        </section>
-      </main>
-    </>
+          const props: EventItemProps = {
+            title: e.title,
+            description: e.description,
+            date: `${e.date}`.split('T')[0],
+            time: e.time,
+            location: e.location,
+            posted_by: e.name,
+            num_attending: e.attendees.length,
+            num_interested: e.interested.length,
+            num_comments: e.comments.length,
+            tags: e.tags,
+            posted_by_id: e.host._id,
+            event_id: e._id
+          }
+          return <EventItem {...props} />
+        })}
+      </section>
+    </main>
   );
 }
 
