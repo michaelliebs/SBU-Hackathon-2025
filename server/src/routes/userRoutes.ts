@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import User, { IUser } from "../models/Users";
-import Event, { IEvent } from "../models/Events";
 import { getUsers } from "../controllers/userController";
 import { Document } from 'mongoose';
 import { requireAuth } from '../middleware/authMiddleware';
@@ -185,6 +184,24 @@ router.patch("/me", requireAuth, async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+
+router.delete("/me", requireAuth, async (req: Request, res: Response) => {
+  const authReq = req as any;
+  try {
+    const user = await User.findById(authReq.user.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    await user.deleteOne(); // deletes the user
+    clearAuthCookie(res); // log the user out
+
+    return res.json({ message: "Profile deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting profile:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 
 

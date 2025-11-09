@@ -2,17 +2,13 @@
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { FaUserCircle } from "react-icons/fa";
 import '../../stylesheets/Header.css';
-
-// type HeaderProps = {
-//   links: typeof Link[]
-// };
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -29,20 +25,34 @@ export default function Header() {
     <header id="site-header">
       <section className="links">
         <div className="link-wrapper">
-          <Link to="/home">Home</Link>
+          <Link to="/home">campus24/7</Link>
         </div>
       </section>
 
-      <search>
+      <search id='search-bar'>
         <input placeholder="Search Events" />
       </search>
 
-      {user && (
-        <div className="profile-menu">
-          {/* Profile icon (blank circle for now) */}
+      {user && (<>
+        <Link to="/create-event" style={{textDecoration: "none"}}>
+          <button className='create-event-btn'>
+            <span style={{fontSize: "22px", marginRight: "10px"}}>+</span>
+            Create event
+          </button>
+        </Link>
+
+       <div className="profile-menu">
+          {/* Profile icon */}
           <div className="profile-icon" onClick={toggleDropdown}>
-            {/* Could replace with an <img> later */}
-            <div className="circle" />
+            {user.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt={`${user.name}'s avatar`}
+                className="avatar-image"
+              />
+            ) : (
+              <FaUserCircle className="avatar-icon" />
+            )}
           </div>
 
           {dropdownOpen && (
@@ -54,7 +64,7 @@ export default function Header() {
             </div>
           )}
         </div>
-      )}
+      </>)}
     </header>
   );
 }

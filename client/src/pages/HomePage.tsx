@@ -1,8 +1,44 @@
 import "../stylesheets/HomePage.css"
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { EventItem, RandomEventItemProps } from "../components/homepage/EventItem";; 
 import type { EventItemProps } from "../components/homepage/EventItem";;
+import type { IEvent } from '../../../server/src/models/Events'
 
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+type EventAndHost = IEvent & { name: string };
 const HomePage = () => {
+  const [events, setEvents] = useState<EventAndHost[]>()
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const result = await axios.get<IEvent[]>(`${API_URL}/events`, { withCredentials: true });
+
+        // Map each event to include host name
+        const eventsWithHost: EventAndHost[] = await Promise.all(
+          result.data.map(async (event) => {
+            try {
+              const userRes = await axios.get(`${API_URL}/users/${event.host}`);
+              console.log("userres:", userRes)
+              return { ...event, name: userRes.data.user.name }; // EventAndHost
+            } catch (err) {
+              console.error(err);
+              return { ...event, name: "Unknown" };
+            }
+          })
+        );
+
+        setEvents(eventsWithHost);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   return (
     <main id="home-page">
       <aside id="filter-events">
@@ -27,58 +63,20 @@ const HomePage = () => {
       </aside>
 
       <section className="container">
-        <div className="event">
-          <h2>Summer Music Festival</h2>
-          <p className="meta">Posted by <strong>Alex Johnson</strong></p>
-          <p>Join us for an outdoor festival full of live bands, food trucks, and fun activities for all ages!</p>
-          <div className="stats">
-            <span>🎟️ 120 going</span> |
-            <span>👀 230 interested</span> |
-            <span>💬 18 comments</span>
-          </div>
-          <div className="tags">
-            <span className="tag">Music</span>
-            <span className="tag">Outdoor</span>
-            <span className="tag">Festival</span>
-          </div>
-        </div>
-
-        
-        <div className="event">
-          <h2>Startup Networking Night</h2>
-          <p className="meta">Posted by <strong>Maria Lee</strong></p>
-          <p>An evening to meet fellow entrepreneurs, pitch ideas, and find potential collaborators.</p>
-          <div className="stats">
-            <span>🎟️ 45 going</span> | 
-            <span>👀 70 interested</span> | 
-            <span>💬 5 comments</span>
-          </div>
-          <div className="tags">
-            <span className="tag">Business</span>
-            <span className="tag">Networking</span>
-            <span className="tag">Startups</span>
-          </div>
-        </div>
-
-        <div className="event">
-          <h2>Community Clean-Up Day</h2>
-          <p className="meta">Posted by <strong>Jamie Rivera</strong></p>
-          <p>Help make our neighborhood shine! Bring gloves and a smile. All ages welcome.</p>
-          <div className="stats">
-            <span>🎟️ 80 going</span> | 
-            <span>👀 95 interested</span> | 
-            <span>💬 9 comments</span>
-          </div>
-          <div className="tags">
-            <span className="tag">Community</span>
-            <span className="tag">Environment</span>
-            <span className="tag">Volunteering</span>
-          </div>
-        </div>
-
-        {[1,2,3,4,5,6,7,8,9,10].map(_ => {
-          const rdProps: EventItemProps = RandomEventItemProps();
-          return <EventItem {...rdProps}/> 
+        {events && events.map(e => {
+          const props: EventItemProps = {
+            title: e.title,
+            description: e.description,
+            date: `${e.date}`.split('T')[0],
+            time: e.time,
+            location: e.location,
+            posted_by: e.name,
+            num_attending: e.attendees.length,
+            num_interested: e.interested.length,
+            num_comments: e.comments.length,
+            tags: e.tags
+          }
+          return <EventItem {...props} />
         })}
       </section>
     </main>
