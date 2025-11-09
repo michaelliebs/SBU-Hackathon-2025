@@ -2,8 +2,7 @@
 ## Made by the students, for the students
 
 # Project Overview
-
-### campus24/7 is a student-driven event-sharing platform designed to help college students connect beyond official clubs and organizations.
+###### campus24/7 is a student-driven event-sharing platform designed to help college students connect beyond official clubs and organizations.
 
 Students can:
 - Create and share their own campus events (e.g., spikeball games, study sessions, movie nights).
