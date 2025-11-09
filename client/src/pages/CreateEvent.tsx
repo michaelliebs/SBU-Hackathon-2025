@@ -31,16 +31,65 @@ const CreateEvent = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API_URL}/events/create`, formData, { withCredentials: true });
-      navigate("/home");
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong while creating the event!");
+  const MAX_TITLE_LENGTH = 60;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_LOCATION_LENGTH = 60;
+const MAX_TAGS = 5;
+const MAX_TAG_LENGTH = 12;
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  // Trim inputs
+  const title = formData.title.trim();
+  const description = formData.description.trim();
+  const location = formData.location.trim();
+  const date = formData.date;
+  const time = formData.time;
+  const tags = formData.tags.map(tag => tag.trim());
+
+  // Validation
+  if (!title || !description || !location || !date || !time) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  if (title.length > MAX_TITLE_LENGTH) {
+    alert(`Title cannot exceed ${MAX_TITLE_LENGTH} characters.`);
+    return;
+  }
+
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    alert(`Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters.`);
+    return;
+  }
+
+  if (location.length > MAX_LOCATION_LENGTH) {
+    alert(`Location cannot exceed ${MAX_LOCATION_LENGTH} characters.`);
+    return;
+  }
+
+  if (tags.length > MAX_TAGS) {
+    alert(`You can only add up to ${MAX_TAGS} tags.`);
+    return;
+  }
+
+  for (const tag of tags) {
+    if (tag.length > MAX_TAG_LENGTH) {
+      alert(`Tag "${tag}" is too long. Max ${MAX_TAG_LENGTH} characters per tag.`);
+      return;
     }
-  };
+  }
+
+  try {
+    await axios.post(`${API_URL}/events/create`, { title, description, date, time, location, tags }, { withCredentials: true });
+    navigate("/home");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong while creating the event!");
+  }
+};
+
 
   return (
     <main id="create-event">
@@ -83,10 +132,15 @@ const CreateEvent = () => {
               type="text"
               placeholder="e.g. music, workshop, networking"
               onChange={(e) => {
-                const parts = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                const parts = e.target.value
+                  .split(',')
+                  .map(s => s.trim())
+                  .filter(Boolean)
+                  .slice(0, MAX_TAGS); // max 5 tags
                 setFormData(prev => ({ ...prev, tags: parts }));
               }}
             />
+
           </div>
 
           <button type="submit" className="submit-btn">Create Event</button>
