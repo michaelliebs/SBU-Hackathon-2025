@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
 import User, { IUser } from "../models/Users";
-import Event, { IEvent } from "../models/Events";
 import { getUsers } from "../controllers/userController";
 import { Document } from 'mongoose';
 import { requireAuth } from '../middleware/authMiddleware';
@@ -129,9 +128,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Login successful",
-      user: {
-        user: safeUser,
-      },
+      user: safeUser,
     });
   } catch (err) {
     console.error("Error during login:", err);
@@ -149,9 +146,10 @@ router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const user = await User.findById(id)
-      .select("name email bio major status eventsHosted eventsAttending") // exclude password
-      .populate("eventsHosted", "title date status") // minimal event info for profile
-      .populate("eventsAttending", "title date status");
+      .select("name email bio major status eventsHosted eventsAttending eventsInterested")
+      .populate("eventsHosted", "title date time location status")
+      .populate("eventsAttending", "title date time location status")
+      .populate("eventsInterested", "title date time location status");
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -161,6 +159,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
 
 // PATCH /users/me
 router.patch("/me", requireAuth, async (req: Request, res: Response) => {
@@ -185,6 +184,24 @@ router.patch("/me", requireAuth, async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+
+router.delete("/me", requireAuth, async (req: Request, res: Response) => {
+  const authReq = req as any;
+  try {
+    const user = await User.findById(authReq.user.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    await user.deleteOne(); // deletes the user
+    clearAuthCookie(res); // log the user out
+
+    return res.json({ message: "Profile deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting profile:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 
 

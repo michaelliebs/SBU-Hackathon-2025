@@ -25,7 +25,6 @@ main#home-page {
   margin: 0;
   padding: 20px 0 0 20px;
   flex-direction: row;
-  margin-top: var(--header-height);
 }
 
 /* Sidebar */
@@ -71,13 +70,14 @@ aside h3 {
 
 /* Events Section */
 .container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   margin: 0 20px;
   gap: 20px;
   align-items: start;
   height: 0;
   flex-wrap: wrap;
-
+  width: 100%;
 }
 
 .event {
@@ -86,7 +86,7 @@ aside h3 {
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
-  min-width: 40%;
+  min-width: 50%;
   flex: 1;
 }
 
@@ -104,6 +104,7 @@ aside h3 {
   font-size: 0.9em;
   color: #777;
   margin-bottom: 10px;
+  align-self: flex-end;
 }
 
 .stats {
@@ -145,5 +146,91 @@ aside h3 {
   .event {
     width: 90%;
     max-width: 500px;
+  }
+}
+
+/* Ensure event text doesn’t overflow */
+.event p,
+.event h2,
+.event .meta,
+.event .stats {
+  overflow-wrap: break-word; /* wrap long words */
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Clamp title and description if too long */
+.event h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* max 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event p {
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* max 4 lines for description */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tags container handling overflow */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.tag {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100px; /* prevent overly long tags */
+  overflow: hidden;
+}
+
+/* Make container responsive */
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Ensure meta and stats don't overflow */
+.event .meta,
+.event .stats {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Optional: truncate long location/time strings */
+.time-date-location-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.9em;
+}
+
+.time-date-location-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .event h2 {
+    -webkit-line-clamp: 1;
+  }
+
+  .event p {
+    -webkit-line-clamp: 3;
+  }
+
+  .tag {
+    max-width: 80px;
   }
 }

@@ -1,88 +1,153 @@
 import "../stylesheets/HomePage.css"
-import { EventItem, RandomEventItemProps } from "../components/homepage/EventItem";; 
-import type { EventItemProps } from "../components/homepage/EventItem";;
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { EventItem } from "../components/homepage/EventItem";
+import type { EventItemProps } from "../components/homepage/EventItem";
+import type { IEvent } from '../../../server/src/models/Events';
+import Header from "../components/homepage/Header";
+import { Filter } from '../components/homepage/Filter';
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+type EventAndHost = IEvent & { name: string };
 
 const HomePage = () => {
+  const [events, setEvents] = useState<EventAndHost[]>([]);
+  const [loading, setLoading] = useState(true); // NEW
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const result = await axios.get<IEvent[]>(`${API_URL}/events`, { withCredentials: true });
+
+        const eventsWithHost: EventAndHost[] = await Promise.all(
+          result.data.map(async (event) => {
+            try {
+              const userRes = await axios.get(`${API_URL}/users/${event.host._id}`, { withCredentials: true });
+              return { ...event, name: userRes.data.user.name };
+            } catch (err) {
+              console.error(err);
+              return { ...event, name: "Unknown" };
+            }
+          })
+        );
+
+        setEvents(eventsWithHost);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const getEventDateTime = (e: any) => {
+    if (!e.date) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(e.date)) {
+      return new Date(`${e.date}T${e.time || "00:00"}`);
+    }
+
+    const base = new Date(e.date);
+    if (Number.isNaN(base.getTime())) return null;
+
+    if (e.time) {
+      const [h, m] = e.time.split(":").map(Number);
+      if (!Number.isNaN(h)) base.setHours(h, m || 0, 0, 0);
+    }
+    return base;
+  };
+
+
+  const filteredEvents = events.filter((e) => {
+    const term = searchTerm.trim().toLowerCase();
+    const normalizedSelectedTags = selectedTags.map((t) => t.toLowerCase());
+    const now = new Date();
+    const eventDateTime = getEventDateTime(e);
+
+    const matchesText =
+      !term ||
+      e.title.toLowerCase().includes(term) ||
+      e.description.toLowerCase().includes(term) ||
+      e.location.toLowerCase().includes(term) ||
+      e.name.toLowerCase().includes(term);
+
+    const matchesTags =
+      normalizedSelectedTags.length === 0
+        ? true
+        : Array.isArray(e.tags) &&
+        normalizedSelectedTags.every((selectedTag) =>
+          e.tags!.some((eventTag) => eventTag.toLowerCase() === selectedTag)
+        );
+
+    const isUpcomingOrOngoing =
+      eventDateTime !== null && eventDateTime >= now;
+
+    return matchesText && matchesTags && isUpcomingOrOngoing;
+  });
+
   return (
-    <main id="home-page">
-      <aside id="filter-events">
-        <h3>Filter Events</h3>
+    <>
+      <Header
+        searchTerm={searchTerm}
+        onSearchChange={(value) => setSearchTerm(value)}
+      />
 
-        <div className="filter-group">
-          <label>Tags:</label>
-          <div><input type="checkbox" /> Music</div>
-          <div><input type="checkbox" /> Business</div>
-          <div><input type="checkbox" /> Community</div>
-          <div><input type="checkbox" /> Outdoor</div>
-        </div>
+      <main id="home-page">
+        <Filter
+          selectedTags={selectedTags}
+          onAddTag={(tag) =>
+            setSelectedTags((prev) =>
+              prev.includes(tag) ? prev : [...prev, tag]
+            )
+          }
+          onRemoveTag={(tag) =>
+            setSelectedTags((prev) => prev.filter((t) => t !== tag))
+          }
+        />
 
-        <div className="filter-group">
-          <label>Attendance:</label>
-          <div><input type="checkbox" /> 0-50</div>
-          <div><input type="checkbox" /> 51-100</div>
-          <div><input type="checkbox" /> 100+</div>
-        </div>
-
-        <button>Apply Filters</button>
-      </aside>
-
-      <section className="container">
-        <div className="event">
-          <h2>Summer Music Festival</h2>
-          <p className="meta">Posted by <strong>Alex Johnson</strong></p>
-          <p>Join us for an outdoor festival full of live bands, food trucks, and fun activities for all ages!</p>
-          <div className="stats">
-            <span>🎟️ 120 going</span> |
-            <span>👀 230 interested</span> |
-            <span>💬 18 comments</span>
+        {loading ? (
+          <div className="loading-container" aria-live="polite">
+            <div className="spinner" style={{ width: 40, height: 40, margin: "1rem auto" }}>
+              <svg viewBox="0 0 50 50" style={{ width: "100%", height: "100%" }}>
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#ccc" strokeWidth="4" />
+                <path d="M45 25a20 20 0 00-7-15" fill="none" stroke="#333" strokeWidth="4" strokeLinecap="round">
+                  <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+                </path>
+              </svg>
+            </div>
           </div>
-          <div className="tags">
-            <span className="tag">Music</span>
-            <span className="tag">Outdoor</span>
-            <span className="tag">Festival</span>
-          </div>
-        </div>
-
-        
-        <div className="event">
-          <h2>Startup Networking Night</h2>
-          <p className="meta">Posted by <strong>Maria Lee</strong></p>
-          <p>An evening to meet fellow entrepreneurs, pitch ideas, and find potential collaborators.</p>
-          <div className="stats">
-            <span>🎟️ 45 going</span> | 
-            <span>👀 70 interested</span> | 
-            <span>💬 5 comments</span>
-          </div>
-          <div className="tags">
-            <span className="tag">Business</span>
-            <span className="tag">Networking</span>
-            <span className="tag">Startups</span>
-          </div>
-        </div>
-
-        <div className="event">
-          <h2>Community Clean-Up Day</h2>
-          <p className="meta">Posted by <strong>Jamie Rivera</strong></p>
-          <p>Help make our neighborhood shine! Bring gloves and a smile. All ages welcome.</p>
-          <div className="stats">
-            <span>🎟️ 80 going</span> | 
-            <span>👀 95 interested</span> | 
-            <span>💬 9 comments</span>
-          </div>
-          <div className="tags">
-            <span className="tag">Community</span>
-            <span className="tag">Environment</span>
-            <span className="tag">Volunteering</span>
-          </div>
-        </div>
-
-        {[1,2,3,4,5,6,7,8,9,10].map(_ => {
-          const rdProps: EventItemProps = RandomEventItemProps();
-          return <EventItem {...rdProps}/> 
-        })}
-      </section>
-    </main>
+        ) : filteredEvents.length === 0 ? (
+          <p style={{ margin: "2rem", textAlign: "center" }}>No events match your search.</p>
+        ) : (
+          <section className="container">
+            {filteredEvents.map((e) => {
+              const props: EventItemProps = {
+                title: e.title,
+                description: e.description,
+                date: `${e.date}`.split('T')[0],
+                time: e.time,
+                location: e.location,
+                posted_by: e.name,
+                num_attending: e.attendees.length,
+                num_interested: e.interested.length,
+                num_comments: e.comments.length,
+                tags: e.tags,
+                posted_by_id: e.host._id,
+                event_id: e._id
+              };
+              return <EventItem key={e._id} {...props} />;
+            })}
+          </section>
+        )}
+      </main>
+    </>
   );
-}
+};
 
 export default HomePage;
