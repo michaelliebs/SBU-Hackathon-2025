@@ -11,7 +11,7 @@ type CreateEventFormData = {
   date: string,
   time: string,
   location: string,
-  tags: string
+  tags: [string]
 };
 
 const CreateEvent = () => {
@@ -21,7 +21,7 @@ const CreateEvent = () => {
     date: "",
     time: "",
     location: "",
-    tags: ""
+    tags: []
   })
   const navigate = useNavigate();
   
@@ -46,7 +46,7 @@ const CreateEvent = () => {
 
 
     /* tags: string[]; */
-    const tag_list: string[] = formData.tags.trim().replace("  ", " ").split(" ");
+    const tag_list: string[] = formData.tags
     const longest_tag_len: number = Math.max(...tag_list.map(t => t.length));
     if(tag_list.length > MAX_TAG_LEN) {
       errors.push("Too many tags, max of "+MAX_TAGS);
@@ -111,8 +111,21 @@ const CreateEvent = () => {
       </label><br/>
 
       {/* tags: string[]; */}
-      <label> Event Tags:<br/>
-        <input name='tags' id='tags' type='text' onChange={handleChange} />
+      <label> Event Tags (comma-separated):<br/>
+        <input
+          name='tags'
+          id='tags'
+          type='text'
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value;
+        const parts = raw
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        // Store as an array (cast to any to avoid changing surrounding types)
+        setFormData(prev => ({ ...prev, tags: parts as any }));
+          }}
+        />
       </label><br/>
 
       {/* N/A for input */}
