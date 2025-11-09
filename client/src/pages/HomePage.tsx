@@ -2,9 +2,9 @@ import "../stylesheets/HomePage.css"
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { EventItem, RandomEventItemProps } from "../components/homepage/EventItem";; 
-import type { EventItemProps } from "../components/homepage/EventItem";;
-import type { IEvent } from '../../../server/src/models/Events'
-
+import type { EventItemProps } from "../components/homepage/EventItem";
+import type { IEvent } from '../../../server/src/models/Events';
+import { Filter } from '../components/homepage/Filter';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -15,11 +15,12 @@ const HomePage = () => {
     const fetchEvents = async () => {
       try {
         const result = await axios.get<IEvent[]>(`${API_URL}/events`, { withCredentials: true });
-
+        console.log(result.data[0])
         // Map each event to include host name
         const eventsWithHost: EventAndHost[] = await Promise.all(
           result.data.map(async (event) => {
             try {
+              console.log("Event is:",event)
               const userRes = await axios.get(`${API_URL}/users/${event.host._id}`, { withCredentials: true });
               console.log("userres:", userRes)
               return { ...event, name: userRes.data.user.name }; // EventAndHost
@@ -41,26 +42,7 @@ const HomePage = () => {
 
   return (
     <main id="home-page">
-      <aside id="filter-events">
-        <h3>Filter Events</h3>
-
-        <div className="filter-group">
-          <label>Tags:</label>
-          <div><input type="checkbox" /> Music</div>
-          <div><input type="checkbox" /> Business</div>
-          <div><input type="checkbox" /> Community</div>
-          <div><input type="checkbox" /> Outdoor</div>
-        </div>
-
-        <div className="filter-group">
-          <label>Attendance:</label>
-          <div><input type="checkbox" /> 0-50</div>
-          <div><input type="checkbox" /> 51-100</div>
-          <div><input type="checkbox" /> 100+</div>
-        </div>
-
-        <button>Apply Filters</button>
-      </aside>
+      <Filter />
 
       <section className="container">
         {events && events.map(e => {
