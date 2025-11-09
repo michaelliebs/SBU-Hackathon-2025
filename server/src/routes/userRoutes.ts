@@ -128,9 +128,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Login successful",
-      user: {
-        user: safeUser,
-      },
+      user: safeUser,
     });
   } catch (err) {
     console.error("Error during login:", err);
@@ -149,8 +147,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 
     const user = await User.findById(id)
       .select("name email bio major status eventsHosted eventsAttending") // exclude password
-      .populate("eventsHosted", "title date status") // minimal event info for profile
-      .populate("eventsAttending", "title date status");
+      .populate("eventsHosted", "title date time location status") // minimal event info for profile
+      .populate("eventsAttending", "title date time location status");
 
     if (!user) return res.status(404).json({ error: "User not found" });
 

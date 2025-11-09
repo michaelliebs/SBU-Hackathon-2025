@@ -3,6 +3,7 @@ import Event from "../models/Events";
 import { requireAuth, AuthRequest } from "../middleware/authMiddleware";
 import { getEvents } from "../controllers/eventController";
 import mongoose from 'mongoose';
+import User from '../models/Users';
 
 const router = Router();
 
@@ -40,6 +41,14 @@ router.post('/create', requireAuth, async (req: AuthRequest, res: Response) => {
       email,
       tags,
     });
+    // After creating the event
+    await User.findByIdAndUpdate(req.user!.userId, {
+      $addToSet: {
+        eventsHosted: newEvent._id, // add the event to the user's hosted events
+        eventsAttending: newEvent._id // add the event to the user's attending events
+      }
+    });
+
 
     return res.status(201).json({ message: "Event successfully created", event: newEvent });
   } catch (err) {
@@ -125,7 +134,6 @@ router.post("/:id/interested", requireAuth, async (req: AuthRequest, res: Respon
   }
 });
 
-// Toggle "attending" status
 router.post("/:id/attending", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
@@ -134,11 +142,13 @@ router.post("/:id/attending", requireAuth, async (req: AuthRequest, res: Respons
 
     const index = event.attendees.findIndex((id) => id.toString() === userId);
     if (index > -1) {
-      // remove user if already attending
+      // remove user if currently attending
       event.attendees.splice(index, 1);
+      await User.findByIdAndUpdate(userId, { $pull: { eventsAttending: event._id } });
     } else {
-      // add user if not already attending
-      event.attendees.push(new mongoose.Types.ObjectId(userId)); // <--- cast
+      // add user if not attending
+      event.attendees.push(new mongoose.Types.ObjectId(userId));
+      await User.findByIdAndUpdate(userId, { $addToSet: { eventsAttending: event._id } });
     }
 
     await event.save();
@@ -149,5 +159,6 @@ router.post("/:id/attending", requireAuth, async (req: AuthRequest, res: Respons
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 export default router;
