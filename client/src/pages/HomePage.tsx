@@ -46,9 +46,29 @@ const HomePage = () => {
     fetchEvents();
   }, []);
 
+  const getEventDateTime = (e: any) => {
+    if (!e.date) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(e.date)) {
+      return new Date(`${e.date}T${e.time || "00:00"}`);
+    }
+
+    const base = new Date(e.date);
+    if (Number.isNaN(base.getTime())) return null;
+
+    if (e.time) {
+      const [h, m] = e.time.split(":").map(Number);
+      if (!Number.isNaN(h)) base.setHours(h, m || 0, 0, 0);
+    }
+    return base;
+  };
+
+
   const filteredEvents = events.filter((e) => {
     const term = searchTerm.trim().toLowerCase();
     const normalizedSelectedTags = selectedTags.map((t) => t.toLowerCase());
+    const now = new Date();
+    const eventDateTime = getEventDateTime(e);
 
     const matchesText =
       !term ||
@@ -61,11 +81,14 @@ const HomePage = () => {
       normalizedSelectedTags.length === 0
         ? true
         : Array.isArray(e.tags) &&
-          normalizedSelectedTags.every((selectedTag) =>
-            e.tags!.some((eventTag) => eventTag.toLowerCase() === selectedTag)
-          );
+        normalizedSelectedTags.every((selectedTag) =>
+          e.tags!.some((eventTag) => eventTag.toLowerCase() === selectedTag)
+        );
 
-    return matchesText && matchesTags;
+    const isUpcomingOrOngoing =
+      eventDateTime !== null && eventDateTime >= now;
+
+    return matchesText && matchesTags && isUpcomingOrOngoing;
   });
 
   return (
