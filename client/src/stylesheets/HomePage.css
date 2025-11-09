@@ -148,3 +148,89 @@ aside h3 {
     max-width: 500px;
   }
 }
+
+/* Ensure event text doesn’t overflow */
+.event p,
+.event h2,
+.event .meta,
+.event .stats {
+  overflow-wrap: break-word; /* wrap long words */
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Clamp title and description if too long */
+.event h2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* max 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event p {
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* max 4 lines for description */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tags container handling overflow */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.tag {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100px; /* prevent overly long tags */
+  overflow: hidden;
+}
+
+/* Make container responsive */
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Ensure meta and stats don't overflow */
+.event .meta,
+.event .stats {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Optional: truncate long location/time strings */
+.time-date-location-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.9em;
+}
+
+.time-date-location-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .event h2 {
+    -webkit-line-clamp: 1;
+  }
+
+  .event p {
+    -webkit-line-clamp: 3;
+  }
+
+  .tag {
+    max-width: 80px;
+  }
+}

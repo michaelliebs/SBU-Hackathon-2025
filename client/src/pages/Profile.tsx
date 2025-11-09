@@ -149,15 +149,16 @@ const Profile = () => {
           <p>No events hosted yet.</p>
         ) : (
           <ul>
-            {user.eventsHosted.map((event) => (
-              <li key={event._id}>
-                <span>{event.title}</span> - <span>{event.date} {event.time}</span> -{" "}
-                <span className="status-dot" style={{backgroundColor: getStatusColor(event.status)}}></span>
-                <span>{event.status}</span>
+          {user.eventsHosted.map((event) => (
+            <li key={event._id}>
+              <a href={`/events/${event._id}`}>{event.title}</a> -{" "}
+              <span>{new Date(event.date).toLocaleDateString()} {event.time}</span> -{" "}
+              <span className="status-dot" style={{ backgroundColor: getStatusColor(event.status) }}></span>
+              <span>{event.status}</span>
+            </li>
+          ))}
+        </ul>
 
-              </li>
-            ))}
-          </ul>
         )}
       </div>
 
@@ -168,14 +169,15 @@ const Profile = () => {
           <p>Not attending any events.</p>
         ) : (
           <ul>
-            {user.eventsAttending.map((event) => (
-              <li key={event._id}>
-                <span>{event.title}</span> - <span>{event.date} {event.time}</span> -{" "}
-                <span className="status-dot" style={{backgroundColor: getStatusColor(event.status)}}></span>
-                <span>{event.status}</span>
-              </li>
-            ))}
-          </ul>
+          {user.eventsAttending.map((event) => (
+            <li key={event._id}>
+              <a href={`/events/${event._id}`}>{event.title}</a> -{" "}
+              <span>{new Date(event.date).toLocaleDateString()} {event.time}</span> -{" "}
+              <span className="status-dot" style={{ backgroundColor: getStatusColor(event.status) }}></span>
+              <span>{event.status}</span>
+            </li>
+          ))}
+        </ul>
         )}
       </div>
     </div>

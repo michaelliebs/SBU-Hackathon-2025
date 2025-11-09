@@ -3,6 +3,7 @@ import Event from "../models/Events";
 import { requireAuth, AuthRequest } from "../middleware/authMiddleware";
 import { getEvents } from "../controllers/eventController";
 import mongoose from 'mongoose';
+import User from '../models/Users';
 
 const router = Router();
 
@@ -40,6 +41,14 @@ router.post('/create', requireAuth, async (req: AuthRequest, res: Response) => {
       email,
       tags,
     });
+    // After creating the event
+    await User.findByIdAndUpdate(req.user!.userId, {
+      $addToSet: {
+        eventsHosted: newEvent._id, // add the event to the user's hosted events
+        eventsAttending: newEvent._id // add the event to the user's attending events
+      }
+    });
+
 
     return res.status(201).json({ message: "Event successfully created", event: newEvent });
   } catch (err) {
@@ -117,8 +126,14 @@ router.post("/:id/interested", requireAuth, async (req: AuthRequest, res: Respon
     }
 
     await event.save();
-    const updated = await event.populate("interested", "name _id");
-    res.status(200).json(updated);
+    // populate all relevant fields before sending back
+    const updatedEvent = await Event.findById(req.params.id)
+      .populate("host", "name _id")         // host info
+      .populate("attendees", "name _id")    // attendees info
+      .populate("interested", "name _id")   // interested users
+      .populate("comments");                // comments if needed
+
+    res.status(200).json(updatedEvent);
   } catch (err) {
     console.error("Error toggling interest:", err);
     res.status(500).json({ error: "Server error" });
@@ -138,16 +153,25 @@ router.post("/:id/attending", requireAuth, async (req: AuthRequest, res: Respons
       event.attendees.splice(index, 1);
     } else {
       // add user if not already attending
-      event.attendees.push(new mongoose.Types.ObjectId(userId)); // <--- cast
+      event.attendees.push(new mongoose.Types.ObjectId(userId));
     }
 
     await event.save();
-    const updated = await event.populate("attendees", "name _id");
-    res.status(200).json(updated);
+
+    // populate all relevant fields before sending back
+    const updatedEvent = await Event.findById(req.params.id)
+      .populate("host", "name _id")         // host info
+      .populate("attendees", "name _id")    // attendees info
+      .populate("interested", "name _id")   // interested users
+      .populate("comments");                // comments if needed
+
+    res.status(200).json(updatedEvent);
   } catch (err) {
     console.error("Error toggling attending:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
 
 export default router;
